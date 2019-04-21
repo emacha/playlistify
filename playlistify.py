@@ -17,13 +17,13 @@ def get_n_last_liked(sp, n):
     return items
 
 
-def get_sorted_id(items):
+def sorted_id(items):
     items = list((it['track']['id'], it['added_at']) for it in items)
     items = sorted(items, key=lambda x: to_timestamp(x[1]), reverse=True)
     return [it[0] for it in items]
 
 
-def get_item_track_ids(items):
+def item_track_ids(items):
     return {it['track']['id'] for it in items}
 
 
@@ -50,8 +50,8 @@ if pl_name not in playlists:
 playlist_id = playlists[pl_name]
 
 # Get new/old songs and add/remove them.
-liked_songs = get_sorted_id(get_n_last_liked(sp, playlist_length))
-playlist_songs = get_item_track_ids(sp.user_playlist(username, playlist_id)['tracks']['items'])
+liked_songs = sorted_id(get_n_last_liked(sp, playlist_length))
+playlist_songs = item_track_ids(sp.user_playlist(username, playlist_id)['tracks']['items'])
 
 if not set(liked_songs) == playlist_songs:
     print('Updating!')
