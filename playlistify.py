@@ -40,10 +40,7 @@ playlist_id = playlists[pl_name]
 # Get new/old songs and add/remove them.
 liked_songs = get_n_last_liked_ids(sp, playlist_length)
 playlist_songs = get_item_track_ids(sp.user_playlist(username, playlist_id)['tracks']['items'])
-new_songs = liked_songs - playlist_songs
-old_songs = playlist_songs - liked_songs
 
-if new_songs:
-    sp.user_playlist_add_tracks(username, playlist_id, new_songs)
-if old_songs:
-    sp.user_playlist_remove_all_occurrences_of_tracks(username, playlist_id, old_songs)
+if not liked_songs == playlist_songs:
+    print('Updating!')
+    sp.user_playlist_replace_tracks(username, playlist_id, liked_songs)
