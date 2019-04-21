@@ -3,6 +3,7 @@ import spotipy
 import credentials
 
 from spotipy import util
+from datetime import datetime
 
 
 def get_playlists(sp, user):
@@ -11,13 +12,24 @@ def get_playlists(sp, user):
     return playlists
 
 
-def get_n_last_liked_ids(sp, n):
+def get_n_last_liked(sp, n):
     items = sp.current_user_saved_tracks(n)['items']
-    return get_item_track_ids(items)
+    return items
+
+
+def get_sorted_id(items):
+    items = list((it['track']['id'], it['added_at']) for it in items)
+    items = sorted(items, key=lambda x: to_timestamp(x[1]), reverse=True)
+    return [it[0] for it in items]
 
 
 def get_item_track_ids(items):
     return {it['track']['id'] for it in items}
+
+
+def to_timestamp(date):
+    ts = datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ').timestamp()
+    return ts
 
 
 scope = 'playlist-modify-public user-library-read'
@@ -38,9 +50,9 @@ if pl_name not in playlists:
 playlist_id = playlists[pl_name]
 
 # Get new/old songs and add/remove them.
-liked_songs = get_n_last_liked_ids(sp, playlist_length)
+liked_songs = get_sorted_id(get_n_last_liked(sp, playlist_length))
 playlist_songs = get_item_track_ids(sp.user_playlist(username, playlist_id)['tracks']['items'])
 
-if not liked_songs == playlist_songs:
+if not set(liked_songs) == playlist_songs:
     print('Updating!')
     sp.user_playlist_replace_tracks(username, playlist_id, liked_songs)
